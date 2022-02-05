@@ -1,17 +1,15 @@
+from dataclasses import dataclass
+from typing import Dict, Type
+
+
+@dataclass
 class InfoMessage:
     """Информационное сообщение о тренировке."""
-    def __init__(self,
-                 training_type: str,
-                 duration: float,
-                 distance: float,
-                 speed: float,
-                 calories: float
-                 ) -> None:
-        self.training_type = training_type
-        self.duration = duration
-        self.distance = distance
-        self.speed = speed
-        self.calories = calories
+    training_type: str
+    duration: float
+    distance: float
+    speed: float
+    calories: float
 
     def get_message(self) -> str:
         """Вывод сообщения о тренировке."""
@@ -36,8 +34,8 @@ class Training:
                  weight: float  # Вес;
                  ) -> None:
         self.action = action
-        self.duration = duration
-        self.weight = weight
+        self.duration_h = duration
+        self.weight_kg = weight
 
     def get_distance(self) -> float:
         """Получить дистанцию в км."""
@@ -48,7 +46,7 @@ class Training:
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость движения."""
         return (
-            self.get_distance() / self.duration
+            self.get_distance() / self.duration_h
         )
 
     def get_spent_calories(self) -> float:
@@ -58,7 +56,7 @@ class Training:
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
         return InfoMessage(type(self).__name__,
-                           self.duration,
+                           self.duration_h,
                            self.get_distance(),
                            self.get_mean_speed(),
                            self.get_spent_calories())
@@ -66,16 +64,16 @@ class Training:
 
 class Running(Training):
     """Тренировка: бег."""
-    RUNNING_BURN_POSITIVE: int = 18  # Параметр расхода калорий при беге №1.
-    RUNNING_BURN_NEGATIVE: int = 20  # Параметр расхода калорий при беге №2.
+    RUNNING_BURN_UP: int = 18  # Параметр расхода калорий при беге №1.
+    RUNNING_BURN_OUT: int = 20  # Параметр расхода калорий при беге №2.
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий при беге."""
         return (
-            (self.RUNNING_BURN_POSITIVE * self.get_mean_speed()
-             - self.RUNNING_BURN_NEGATIVE)
-            * self.weight / Training.M_IN_KM
-            * self.duration * Training.MIN_IN_H
+            (self.RUNNING_BURN_UP * self.get_mean_speed()
+             - self.RUNNING_BURN_OUT)
+            * self.weight_kg / Training.M_IN_KM
+            * self.duration_h * Training.MIN_IN_H
         )
 
 
@@ -96,9 +94,10 @@ class SportsWalking(Training):
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий при спортивной ходьбе."""
         return (
-            (self.WALKING_BURN_UP * self.weight + (self.get_mean_speed() ** 2
-             // self.height) * self.WALKING_BURN_OUT * self.weight)
-            * self.duration * Training.MIN_IN_H
+            (self.WALKING_BURN_UP * self.weight_kg
+             + (self.get_mean_speed() ** 2 // self.height)
+             * self.WALKING_BURN_OUT * self.weight_kg)
+            * self.duration_h * Training.MIN_IN_H
         )
 
 
@@ -123,25 +122,25 @@ class Swimming(Training):
         """Получить среднюю скорость плаванья."""
         return (
             self.length_pool * self.count_pool
-            / Training.M_IN_KM / self.duration
+            / Training.M_IN_KM / self.duration_h
         )
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий при плаваньи."""
         return (
             (self.get_mean_speed() + self.SWIMMING_BURN_UP)
-            * self.SWIMMING_BURN_OUT * self.weight
+            * self.SWIMMING_BURN_OUT * self.weight_kg
         )
 
 
 def read_package(workout_type: str, data: list) -> Training:
     """Прочитать данные полученные от датчиков."""
-    dictionary = {
+    training_types: Dict[str, Type[Training]] = {
         'RUN': Running,
         'WLK': SportsWalking,
         'SWM': Swimming
     }
-    return dictionary[workout_type](*data)
+    return training_types[workout_type](*data)
 
 
 def main(training: Training) -> None:
