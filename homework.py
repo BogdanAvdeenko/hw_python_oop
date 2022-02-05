@@ -29,12 +29,6 @@ class Training:
     M_IN_KM: int = 1000  # Для перевода значений из м в км.
     MIN_IN_H: int = 60  # Для перевода часов в минуты.
     LEN_STEP: float = 0.65  # Расстояние за один шаг.
-    CF_CL_1: int = 18  # Переменная расхода калорий при беге №1.
-    CF_CL_2: int = 20  # Переменная расхода калорий при беге №2
-    CF_CL_3: float = 0.035  # Переменная расхода калорий при ходьбе №1.
-    CF_CL_4: float = 0.029  # Переменная расхода калорий при ходьбе №2.
-    CF_CL_5: float = 1.1  # Переменная расхода калорий при плаваньи №1.
-    CF_CL_6: int = 2  # Переменная расхода калорий при плаваньи №2.
 
     def __init__(self,
                  action: int,  # Действие во время тренировки;
@@ -63,7 +57,7 @@ class Training:
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
-        return InfoMessage(self.__class__.__name__,
+        return InfoMessage(type(self).__name__,
                            self.duration,
                            self.get_distance(),
                            self.get_mean_speed(),
@@ -72,11 +66,14 @@ class Training:
 
 class Running(Training):
     """Тренировка: бег."""
+    RUNNING_BURN_POSITIVE: int = 18  # Параметр расхода калорий при беге №1.
+    RUNNING_BURN_NEGATIVE: int = 20  # Параметр расхода калорий при беге №2.
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий при беге."""
         return (
-            (Training.CF_CL_1 * self.get_mean_speed() - Training.CF_CL_2)
+            (self.RUNNING_BURN_POSITIVE * self.get_mean_speed()
+             - self.RUNNING_BURN_NEGATIVE)
             * self.weight / Training.M_IN_KM
             * self.duration * Training.MIN_IN_H
         )
@@ -84,6 +81,9 @@ class Running(Training):
 
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
+    WALKING_BURN_UP: float = 0.035  # Параметр расхода калорий при ходьбе №1.
+    WALKING_BURN_OUT: float = 0.029  # Параметр расхода калорий при ходьбе №2.
+
     def __init__(self,
                  action: int,
                  duration: float,
@@ -96,14 +96,17 @@ class SportsWalking(Training):
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий при спортивной ходьбе."""
         return (
-            (Training.CF_CL_3 * self.weight + (self.get_mean_speed() ** 2
-             // self.height) * self.weight) * self.duration * Training.MIN_IN_H
+            (self.WALKING_BURN_UP * self.weight + (self.get_mean_speed() ** 2
+             // self.height) * self.WALKING_BURN_OUT * self.weight)
+            * self.duration * Training.MIN_IN_H
         )
 
 
 class Swimming(Training):
     """Тренировка: плавание."""
     LEN_STEP: float = 1.38  # Расстояние за один гребок.
+    SWIMMING_BURN_UP: float = 1.1  # Параметр расхода калорий при плаваньи №1.
+    SWIMMING_BURN_OUT: int = 2  # Параметр расхода калорий при плаваньи №2.
 
     def __init__(self,
                  action: int,
@@ -126,8 +129,8 @@ class Swimming(Training):
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий при плаваньи."""
         return (
-            (self.get_mean_speed() + Training.CF_CL_5)
-            * Training.CF_CL_6 * self.weight
+            (self.get_mean_speed() + self.SWIMMING_BURN_UP)
+            * self.SWIMMING_BURN_OUT * self.weight
         )
 
 
