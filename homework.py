@@ -141,10 +141,9 @@ def read_package(workout_type: str, data: list) -> Training:
         'WLK': SportsWalking,
         'SWM': Swimming
     }
-    if workout_type in training_types:
-        return training_types[workout_type](*data)
-    else:
+    if workout_type not in training_types:
         raise ValueError('Неподдерживаемый режим тренировки.')
+    return training_types[workout_type](*data)
 
 
 def main(training: Training) -> None:
