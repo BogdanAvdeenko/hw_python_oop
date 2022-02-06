@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass
+from typing import Dict, Type
 
 
 @dataclass
@@ -9,7 +10,7 @@ class InfoMessage:
     distance: float
     speed: float
     calories: float
-    information_message = (
+    information_message: str = (
         'Тип тренировки: {0}; Длительность: {1:.3f} ч.; '
         'Дистанция: {2:.3f} км; Ср. скорость: {3:.3f} км/ч; '
         'Потрачено ккал: {4:.3f}.'
@@ -133,17 +134,17 @@ class Swimming(Training):
         )
 
 
-def read_package(workout_type: str, data: list[int]) -> Training:
+def read_package(workout_type: str, data: list) -> Training:
     """Прочитать данные полученные от датчиков."""
-    training_types = {
+    training_types: Dict[str, Type[Training]] = {
         'RUN': Running,
         'WLK': SportsWalking,
         'SWM': Swimming
     }
-    if workout_type not in training_types:
-        raise ValueError('Неподдерживаемый режим тренировки.')
-    else:
+    if workout_type in training_types:
         return training_types[workout_type](*data)
+    else:
+        raise ValueError('Неподдерживаемый режим тренировки.')
 
 
 def main(training: Training) -> None:
