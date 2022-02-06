@@ -9,7 +9,7 @@ class InfoMessage:
     distance: float
     speed: float
     calories: float
-    information_message: str = (
+    information_message = (
         'Тип тренировки: {0}; Длительность: {1:.3f} ч.; '
         'Дистанция: {2:.3f} км; Ср. скорость: {3:.3f} км/ч; '
         'Потрачено ккал: {4:.3f}.'
